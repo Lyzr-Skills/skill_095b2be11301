@@ -1,0 +1,10 @@
+{
+  "skill_name": "florida-material-risk",
+  "evals": [
+    {"id": 1, "prompt": "I manage Florida DC. In Scenario 1, which materials have significant forecast inventory or safety stock issues during the next 26 model weeks?", "expected_output": "Reads current period and actual inventory/safety stock when available; distinguishes shortfall (unmet demand); pages to complete coverage; reports horizon, date and significance basis.", "files": []},
+    {"id": 2, "prompt": "Using the full attached HPE BOM PDF, which finished goods are affected by the material issues we just found in Florida?", "expected_output": "Matches exact BOM code across all pages; excludes unmatched; reports at-risk versus proved unbuildable, optional quantities and shared-material conflict.", "files": []},
+    {"id": 3, "prompt": "For the four flagged Florida materials in Scenario 1, check all other sites and pick the best transfer source, ideally the site with the most excess in the shortage week.", "expected_output": "Rechecks relevant weeks, pages all donor sites, separates largest modeled excess from transferable/fastest feasible stock; does not run PO search.", "files": []},
+    {"id": 4, "prompt": "Can we pull forward committed open purchase orders for those materials into Florida by their first shortfall week?", "expected_output": "Finds matched open committed PO lines with dates and quantities, flags stale dated lines, gives qualified expedite checks rather than changing orders; does not run donor search.", "files": []},
+    {"id": 5, "prompt": "Give me a full material-to-finished-good risk report for all stock sites for the next model year with transfer and PO options.", "expected_output": "Runs shared + all branches, requests scenario if ambiguous, tracks full location/time/BOM coverage and missing buildability or timing input.", "files": []}
+  ]
+}
