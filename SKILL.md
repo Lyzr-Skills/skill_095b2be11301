@@ -1,0 +1,24 @@
+---
+name: florida-material-risk
+description: Read-only material planning in PMGT - Inventory Planning V6.0. Use for Florida or other site material forecast shortfalls, stockouts, safety stock, next 26 model weeks, affected finished goods from the supplied HPE BOM PDF, best donor site or largest excess for transfers, and open/committed purchase orders that could be pulled forward. Use for follow-up questions about the same scenario. Route to only the relevant analysis below; do not confuse unmet demand with forecast inventory or treat candidate actions as executed.
+---
+
+# Materials planning: route first, read only what is needed
+
+Use the exact named model `PMGT - Inventory Planning V6.0` and the supplied **complete HPE BOM PDF** only; don't use outside data. Do not write cells, run imports/processes, place/alter orders, or execute transfers. If either source required by a request cannot be read in full enough to substantiate the answer, stop and identify the missing source/coverage. Read data on every new question; reuse verified schema and confirmed user choices within a conversation, not old numeric cells or dates.
+
+## Routing (read one reference, or the few needed)
+- Material shortages, inventory, safety-stock breaches, significant deficits, next 26 weeks -> `references/shortfalls.md`.
+- “Which finished goods?” / BOM / buildability -> `references/finished-goods.md` plus a fresh or valid same-run shortlist from shortfalls. If the user asks for a complete refreshed report, refresh inventory too.
+- “Where to transfer from?” / donor / largest excess -> `references/transfers.md` using the specific flagged materials and required weeks. Don't re-read the whole forecast if a targeted fresh check suffices.
+- “Pull forward committed POs?” / expedite / reorder -> `references/purchase-orders.md` using specific material, destination, due week. Don't search donor locations unless asked for a comparison.
+- Full risk and mitigation request -> shortfalls, finished goods, then both mitigation branches. Present one combined report without re-running the same queries.
+
+## Shared gates
+1. `get_model_context`; if not the exact model, find with `catalog_models` then `set_model_context`. Record verified module, measure, dimension, and member labels; discover with `catalog_modules` -> `catalog_line_items(detail="full")` -> `sql_schema` only as needed. Don't hard-code unknown module/measure names.
+2. Honor confirmed location, Scenario 1, and horizon in this conversation; otherwise use explicit user scope. If no locations or horizon: **all stock-holding locations and next model year**; state this. If several scenarios exist and none selected, ask; never aggregate scenarios. A scenario list is not automatically native Versions. When a module has native Versions, pin exactly one in each query. Pin every other dimension to one member or deliberately scan a bounded leaf axis. If relative time matters, follow model-tool time-anchor protocol: `list_time_anchors`; resolve conflicts with the user, read any unread candidates, then `set_time_anchor`; re-read `SYS003 - Current Period`.`EF Current Period` if present to establish the effective period rather than blindly trusting a native calendar default. If anchors disagree, ask rather than choosing yourself. Resolve actual model week labels in calendar order; never increment week strings or equate model FY25 with current wall-clock time.
+3. Return measure names, signs, units, and their meaning. `Shortfall (U)` is unmet material demand, **not inventory or safety stock**. Verify sign convention before filtering; no assumed negative sign. Forecast inventory below zero and below safety stock require actual relevant line items. A model's forecast excess is not guaranteed uncommitted physical stock.
+4. Choose bounded reads. `read_cells` accounts for every dimension through `slice` or `leaf_dimensions`, page until `has_more=false`; if two-axis read times out once, switch to one-week/one-material reads rather than repeat it. SQL needs `sql_schema` with the same included_objects, exactly one module, explicit LIMIT, one pinned version, and constrain all but deliberate leaf dimensions. Never claim complete coverage from a truncated page or an all-time total. Stop after repeated bounded failures and disclose exact partial coverage.
+5. For every answer give location(s), scenario, period labels/horizon, data-read date, and verified versus unverified items. Rank severity by model weeks: Critical weeks 1–4 or proven no buildability; High weeks 5–8; Medium weeks 9+ or safety-stock-only. If a first-risk week cannot be established, severity is unknown. Do not infer completed action, procurement status, transit time, or delivery impact without evidence.
+
+If available context contains a prior result, treat it as a **lead for targeted re-check**, not as fresh inventory or an enduring current period. A prior user choice (e.g., Scenario 1) remains a choice unless changed.
